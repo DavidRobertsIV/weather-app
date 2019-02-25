@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Weather</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <style>
+       * {
+           margin: 0 auto;
+           padding: 0;
+           box-sizing:border-box;
+       } 
+
+       body {
+            font-family: sans-serif;
+          color: white;
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          background: #4568DC;  /* fallback for old browsers */
+          background: -webkit-linear-gradient(to right, #B06AB3, #4568DC);  /* Chrome 10-25, Safari 5.1-6 */
+          background: linear-gradient(to right, #B06AB3, #4568DC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+          background-repeat: no-repeat;
+          
+       }
+
+       .location, .temperature {
+           display: flex;
+           width: 50%;
+           height: 30vh;
+           justify-content: space-around;
+           align-items: center;
+       }
+
+       .temperature {
+           flex-direction: column;
+       }
+
+       .degree-section {
+           display: flex;
+           align-items: center;
+           cursor: pointer;
+       }
+
+       .degree-section span {
+           margin: 10px;
+           font-size: 30px;
+       }
+
+       .degree-section h2 {       
+           font-size: 40px;
+       }
+    </style>
+</head>
+<body>
+    <div class="location">
+        <h1 class="location-timezone">Timezone</h1>
+        <canvas class="icon" width="128" height="128"></canvas>
+    </div>
+    <div class="temperature">
+        <div class="degree-section">
+            <h2 class="degree">50</h2>
+            <span>F</span>
+        </div>
+        <div class="temperature-description">
+            It is Snowing
+        </div>
+
+    </div>
+    
+
+
+<script src ="Skycons.js"></script>
+<script>
+window.addEventListener('load', ()=> {
+let long;
+let lat;
+let temperatureDescription = document.querySelector('.temperature-description');
+let temperatureDegree = document.querySelector('.degree');
+// let locationTimezone = document.querySelector('.location-timezone');
+let locationTimezone = document.querySelector('.location-timezone');
+const temperatureSection = document.querySelector('.temperature')
+let temperatureSpan = document.querySelector('.temperature span');
+
+
+
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(position =>{            
+            long = position.coords.longitude;
+            lat =  position.coords.latitude;
+
+            const proxy = "https://cors-anywhere.herokuapp.com/";
+            const api = `${proxy}https://api.darksky.net/forecast/b5bcec895880765fc265d2335ca31b2f/${lat},${long}`;
+            fetch(api)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    const {temperature, summary, icon} = data.currently;
+                    // Set DOM items deom api
+                    temperatureDegree.textContent = temperature;
+                    temperatureDescription.textContent = summary;
+                    locationTimezone.textContent = data.timezone;
+                    let celsius = (temperature - 32) * (5/9);
+                    //set icons
+                    setIcons(icon, document.querySelector('.icon'));
+
+                    // change temp to Fahrenheit/Celsius
+                    temperatureSection.addEventListener('click', ()=> {
+                        if(temperatureSpan.textContent === "F") {
+                            temperatureSpan.textContent = "C"
+                            temperatureDegree.textContent = celsius;
+                        }   else {
+                            temperatureSpan.textContent ="F"
+                            temperatureDegree.textContent = temperature;
+
+                        }
+                    })
+                });
+        });     
+    }
+
+    function setIcons(icon,iconID) {
+        const skycons = new Skycons({color: "white"});
+        const currentIcon = icon.replace(/-/g, "_").toUpperCase();
+        skycons.play();
+        return skycons.set(iconID, Skycons[currentIcon]);
+    }
+});
+
+
+
+
+
+</script>
+</body>
+</html>
